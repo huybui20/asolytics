@@ -33,21 +33,21 @@ except:
     from extract import Extract_keywords
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--key', dest='key', type=str, help='Аналізувати ключову фразу')
-parser.add_argument('--hl', dest='hl', type=str, help='Вкажіть код мови')
-parser.add_argument('--gl', dest='gl', type=str, help='Вкажіть код країни')
-parser.add_argument('--trends', dest='trends', action='store_true', help='Аналіз трендових ключів в Google Play')
-parser.add_argument('--average', dest='average', type=str, help='Середня кількість завантажень / оцінок на добу (--average org.telegram.messenger)')
+parser.add_argument('--key', dest='key', type=str, help='Analyze key phrase')
+parser.add_argument('--hl', dest='hl', type=str, help='Specify language code')
+parser.add_argument('--gl', dest='gl', type=str, help='Specify country code')
+parser.add_argument('--trends', dest='trends', action='store_true', help='Analyze trending keywords in Google Play')
+parser.add_argument('--average', dest='average', type=str, help='Average number of downloads / ratings per day (--average org.telegram.messenger)')
 
-parser.add_argument('--tracker', dest='tracker', type=str, help='Відстежити позиції додатка в пошуку (--tracker "вікторини;ігри про зомбі;стрілялки онлайн" )')
-parser.add_argument('--id', dest='id', type=str, help='Bundle ID - додатка який треба відстежити')
-parser.add_argument('--file', dest='file', action='store_true', help='Використовуйте цей ключ якщо параметр --tracker вказує на файл з ключовими словами (кожен ключ має бути з нової строки)')
-parser.add_argument('--extract', dest='extract', type=str, help='Виявити ключові слова які використовуються в метаданих застосунку. Аналізуються заголовок, назва розробника, короткий опис, повний опис, відгуки. (--extract org.telegram.messenger)')
-parser.add_argument('--similar', dest='similar', type=str, help='Аналіз схожих додатків. Використовуйте цей ключ, щоб проаналізувати сторінки ваших конкурентів де ви відображаєтесь в схожих (--similar org.telegram.messenger)')
-parser.add_argument('--local', dest='local', type=str, help='Аналіз локалізації неймінга. Мови на які перекладено сторінку додатку в Goole Play (--local org.thoughtcrime.securesms)')
-parser.add_argument('--reviews', dest='reviews', type=str, help='Аналізувати зафічерені відгуки в різних локалях. Відгуки які знаходяться в топі  (--reviews org.thoughtcrime.securesms)')
-parser.add_argument('--csv', dest='csv', type=str, help='Використовуйте цю опцію, щоб зберегти результат у файл, csv можна відкрити за допомогою електронних таблиць, наприклад Excel (--csv file.csv)')
-parser.add_argument('--tags', dest='tags', type=str, help='Інструмент аналізу тегів в Google Play, перевірка індексації додатку по тегам (--tags org.thoughtcrime.securesms)')
+parser.add_argument('--tracker', dest='tracker', type=str, help='Track app positions in search (--tracker "quizzes;zombie games;online shooters" )')
+parser.add_argument('--id', dest='id', type=str, help='Bundle ID - the app to track')
+parser.add_argument('--file', dest='file', action='store_true', help='Use this key if the --tracker parameter points to a file with keywords (each keyword should be on a new line)')
+parser.add_argument('--extract', dest='extract', type=str, help='Detect keywords used in app metadata. Analyzes title, developer name, short description, full description, reviews. (--extract org.telegram.messenger)')
+parser.add_argument('--similar', dest='similar', type=str, help='Analyze similar apps. Use this key to analyze competitor pages where you appear in similar apps (--similar org.telegram.messenger)')
+parser.add_argument('--local', dest='local', type=str, help='Analyze localization of naming. Languages to which the app page is translated in Google Play (--local org.thoughtcrime.securesms)')
+parser.add_argument('--reviews', dest='reviews', type=str, help='Analyze featured reviews in different locales. Reviews that are at the top (--reviews org.thoughtcrime.securesms)')
+parser.add_argument('--csv', dest='csv', type=str, help='Use this option to save the result to a file, csv can be opened with spreadsheets like Excel (--csv file.csv)')
+parser.add_argument('--tags', dest='tags', type=str, help='Google Play tag analysis tool, check app indexing by tags (--tags org.thoughtcrime.securesms)')
 
 args = parser.parse_args()
 
@@ -61,27 +61,27 @@ options.add_argument("--headless")
 ###################################################################################################################
 
 def tags_analysis(bundleId):
-    print(Fore.GREEN + "* * * Виконую * * *" + Fore.WHITE)
+    print(Fore.GREEN + "* * * Executing * * *" + Fore.WHITE)
     print("Bundle ID: " + bundleId)
     if args.hl != None:
         hl = args.hl
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
     else:
         hl = "en"
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
 
     if args.gl != None:
         gl = args.gl
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
     else:
         gl = "US"
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
 
     gpt = Google_play_tags()
     tag_labels = gpt.start(bundleId, gl, hl)
 
     x = PrettyTable()
-    x.field_names = ["Тег", "Тип тегу", "Ключ тегу", "Значущість для кластера", "Кількість додатків", "Індексація по тегу"]
+    x.field_names = ["Tag", "Tag type", "Tag keyword", "Cluster significance", "Number of apps", "Tag indexing"]
 
     for tag_label in tag_labels:
         tag = gpt.find_by_name(tag_label)
@@ -94,15 +94,15 @@ def tags_analysis(bundleId):
             gpt.get_index_tag(tag_label)
         ])
     x.hrules = ALL
-    x._max_width["Тег"] = 30
-    x._max_width["Ключ тегу"] = 30
-    print(x.get_string(sortby=("Значущість для кластера")))
+    x._max_width["Tag"] = 30
+    x._max_width["Tag keyword"] = 30
+    print(x.get_string(sortby=("Cluster significance")))
 
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
 
-    print("Всього проаналізовано додатків: {}".format(gpt.count_apps_all))
-    print("* * * Виконано! * * *")
+    print("Total apps analyzed: {}".format(gpt.count_apps_all))
+    print("* * * Done! * * *")
 
 ###################################################################################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -110,13 +110,13 @@ def tags_analysis(bundleId):
 ###################################################################################################################
 
 def reviews_analysis(bundleId):
-    print(Fore.GREEN + "* * * Виконую * * *" + Fore.WHITE)
+    print(Fore.GREEN + "* * * Executing * * *" + Fore.WHITE)
     print("Bundle ID: " + bundleId)
     fr = Featured_reviews()
     elements = fr.start(bundleId)
 
     x = PrettyTable()
-    x.field_names = ["Локаль Google Play", "Дата публікації" ,"Відгук", "Оцінка", "Відповідь розробника"]
+    x.field_names = ["Google Play Locale", "Publication date" ,"Review", "Rating", "Developer response"]
 
     all_rate = []
     for element in elements:
@@ -124,16 +124,16 @@ def reviews_analysis(bundleId):
             x.add_row([element.hl, element.pub_dates[i], review, element.rates[i], element.dev_response[i]])
             all_rate.append(element.rates[i])
     x.hrules = ALL
-    x._max_width["Відгук"] = 50
-    x._max_width["Відповідь розробника"] = 40
-    print(x.get_string(sortby=("Локаль Google Play")))
+    x._max_width["Review"] = 50
+    x._max_width["Developer response"] = 40
+    print(x.get_string(sortby=("Google Play Locale")))
     if(len(all_rate) > 0):
-        print("Середня оцінка по фічеру відгуків: " + str(round(sum(all_rate) / len(all_rate), 1)))
+        print("Average featured review rating: " + str(round(sum(all_rate) / len(all_rate), 1)))
 
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
 
-    print("* * * Виконано! * * *")
+    print("* * * Done! * * *")
 
 ###################################################################################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -141,24 +141,24 @@ def reviews_analysis(bundleId):
 ###################################################################################################################
 
 def localization_analysis(bundleId):
-    print(Fore.GREEN + "* * * Виконую * * *" + Fore.WHITE)
+    print(Fore.GREEN + "* * * Executing * * *" + Fore.WHITE)
     print("Bundle ID: " + bundleId)
     lon = Localization_of_naming()
     elements = lon.start(bundleId)
 
     x = PrettyTable()
-    x.field_names = ["Локаль Google Play", "Назва додатку", "Мова яка використовується"]
+    x.field_names = ["Google Play Locale", "App name", "Detected language"]
     names = []
     for element in elements:
         x.add_row([element[0], element[1], element[2]])
         names.append(element[1])
-    print(x.get_string(sortby=("Мова яка використовується")))
+    print(x.get_string(sortby=("Detected language")))
     list_set = set(names)
     unique_list = (list(list_set))
-    print("Кількість використаних мов: " + str(len(unique_list)))
+    print("Number of languages used: " + str(len(unique_list)))
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
-    print("* * * Виконано! * * *")
+    print("* * * Done! * * *")
     return
 
 ###################################################################################################################
@@ -167,12 +167,12 @@ def localization_analysis(bundleId):
 ###################################################################################################################
 
 def action_parser_similar_app(bundleId):
-    print(Fore.GREEN + "* * * Виконую * * *" + Fore.WHITE)
-    print(Fore.RED + "Процес збору та аналізу даних може бути тривалим..." + Fore.WHITE)
+    print(Fore.GREEN + "* * * Executing * * *" + Fore.WHITE)
+    print(Fore.RED + "The process of collecting and analyzing data may take a long time..." + Fore.WHITE)
     apps = parser_similar(bundleId)
     
     x = PrettyTable()
-    x.field_names = ["Назва додатку / Bundle ID", "Ваша позиція в схожих", "Кількість завантажень", "Завантажень на добу"]
+    x.field_names = ["App name / Bundle ID", "Your position in similar", "Number of installs", "Installs per day"]
 
     pos = []
     ins_x1 = []
@@ -191,26 +191,26 @@ def action_parser_similar_app(bundleId):
                 x2 = int(item.installs[1] / days)
             x.add_row([item.name + "\n" + item.link.replace("https://play.google.com/store/apps/details?id=", ""),  
                 item.simular_position(bundleId) + 1, 
-                "від " + str(item.installs[0]) + " до " + str(item.installs[1]), 
-                "від " + str(x1) + " до " + str(x2)])
+                "from " + str(item.installs[0]) + " to " + str(item.installs[1]), 
+                "from " + str(x1) + " to " + str(x2)])
             pos.append(item.simular_position(bundleId) + 1)
             ins_x1.append(item.installs[0])
             ins_x2.append(item.installs[1])
             ins_x1_daily.append(x1)
             ins_x2_daily.append(x2)
     x.hrules = ALL
-    print(x.get_string(sortby=("Ваша позиція в схожих")))
-    print("Проаналізовано додатків: " + str(len(apps.values())))
+    print(x.get_string(sortby=("Your position in similar")))
+    print("Apps analyzed: " + str(len(apps.values())))
     if(len(pos) > 0):
-        print("Середня позиція в підбірках: " + str(round(sum(pos) / len(pos))))
-        print("Медіана позицій в підбірках схожих додатків: " + str(statistics.median(pos)))
-        print("Середня кількість інсталів додатків, на сторінках яких ви відображаєтесь: від " + str(int(sum(ins_x1) / len(ins_x1))) + " до " + str(int(sum(ins_x2) / len(ins_x2))))
-        print("Середня кількість інсталів додатків на добу, на сторінках яких ви відображаєтесь: від " + str(int(sum(ins_x1_daily) / len(ins_x1_daily))) + " до " + str(int(sum(ins_x2_daily) / len(ins_x2_daily))))
+        print("Average position in collections: " + str(round(sum(pos) / len(pos))))
+        print("Median position in similar apps: " + str(statistics.median(pos)))
+        print("Average number of installs of apps where you appear: from " + str(int(sum(ins_x1) / len(ins_x1))) + " to " + str(int(sum(ins_x2) / len(ins_x2))))
+        print("Average daily installs of apps where you appear: from " + str(int(sum(ins_x1_daily) / len(ins_x1_daily))) + " to " + str(int(sum(ins_x2_daily) / len(ins_x2_daily))))
     else:
-        print("Ваш додаток ніде не відображається в схожих!")
+        print("Your app does not appear in similar apps!")
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
-    print("* * * Виконано! * * *")
+    print("* * * Done! * * *")
     return
 
 ###################################################################################################################
@@ -222,17 +222,17 @@ def extract_keywords_metadata_app(bundleId):
 
     if args.hl != None:
         hl = args.hl
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
     else:
         hl = "en"
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
 
     if args.gl != None:
         gl = args.gl
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
     else:
         gl = "US"
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
 
     
     ek = Extract_keywords()
@@ -244,21 +244,21 @@ def extract_keywords_metadata_app(bundleId):
     ek.browser_exit()
 
     x = PrettyTable()
-    x.field_names = ["Ключова фраза", "Значущість в тексті", "Позиція в пошуку"]
+    x.field_names = ["Key phrase", "Significance in text", "Search position"]
 
     for item in valid_keys:
         x.add_row([item[0], item[1], item[2]])
 
-    print(x.get_string(sortby=("Позиція в пошуку")))
+    print(x.get_string(sortby=("Search position")))
 
-    print("Кількість знайдених ключових слів: " + str(len(valid_keys)))
-    print("Коефіцієнт індексації метаданих (країна - " + gl +"; мова - " + hl +"): "
+    print("Number of found keywords: " + str(len(valid_keys)))
+    print("Metadata indexing coefficient (country - " + gl +"; language - " + hl +"): "
          + str(int(100 * len(valid_keys)/len(keywords))) + "%")
 
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
 
-    print("* * * Виконано! * * *")
+    print("* * * Done! * * *")
 
     return
 
@@ -270,32 +270,32 @@ def extract_keywords_metadata_app(bundleId):
 def tracker_position_google_play():
 
     if(args.id == None): 
-        print("Треба вказати bundle ID додатка (--id org.telegram.messenger)")
+        print("You need to specify the app bundle ID (--id org.telegram.messenger)")
         return
     else:
         bundleId = args.id
 
     if args.hl != None:
         hl = args.hl
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
     else:
         hl = "en"
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
 
     if args.gl != None:
         gl = args.gl
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
     else:
         gl = "US"
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
 
     tgp = Tracker_google_play()
 
     try :
         name = tgp.get_name_app(bundleId, hl, gl)
-        print(Fore.GREEN + "Назва додатка: " + name + Fore.WHITE)
+        print(Fore.GREEN + "App name: " + name + Fore.WHITE)
     except:
-        print("Додаток з таким bundleID ("+ bundleId +") не знайдено в Google Play")
+        print("App with bundleID ("+ bundleId +") not found in Google Play")
         tgp.close_browser()
         return
 
@@ -323,7 +323,7 @@ def tracker_position_google_play():
     history = tgp.history(map_keywords)
     count_days_in_history = tgp.count_day_in_history(history, map_keywords.keys())
     if count_days_in_history > 0:
-        x.field_names = ["Ключова фраза", "Позиція в пошуку", "Позиція вчора", "Змінилася", "Входжень в назви", "Входжень в ім'я розробника"]
+        x.field_names = ["Key phrase", "Search position", "Position yesterday", "Changed", "Occurrences in title", "Occurrences in developer name"]
 
         for item in map_keywords.items():
             position_day1 = tgp.find_position_by_day(history, item[0], 1)
@@ -334,22 +334,21 @@ def tracker_position_google_play():
                 item[1]["conteins_title"], 
                 item[1]["conteins_company"]])
     else:
-        x.field_names = ["Ключова фраза", "Позиція в пошуку", "Входжень в назви", "Входжень в ім'я розробника"]
+        x.field_names = ["Key phrase", "Search position", "Occurrences in title", "Occurrences in developer name"]
 
         for item in map_keywords.items():
             x.add_row([item[0], item[1]["position"] + 1, item[1]["conteins_title"], item[1]["conteins_company"]])
 
-    print(x.get_string(sortby=("Позиція в пошуку")))
+    print(x.get_string(sortby=("Search position")))
 
     x1 = PrettyTable()
     if count_days_in_history > 0:
-        #x.field_names = ["Ключова фраза", "Позиція в пошуку", "Змінилася", "Входжень в назви", "Входжень в ім'я розробника"]
-        header = ["Ключова фраза"]
-        for i in range(count_days_in_history, 0, -1): header.append("День {}".format(i))
-        header.append("Позиція в пошуку")
-        header.append("Змінилася")
-        header.append("Входжень в назви")
-        header.append("Входжень в ім'я розробника")
+        header = ["Key phrase"]
+        for i in range(count_days_in_history, 0, -1): header.append("Day {}".format(i))
+        header.append("Search position")
+        header.append("Changed")
+        header.append("Occurrences in title")
+        header.append("Occurrences in developer name")
         x1.field_names = header
 
         for item in map_keywords.items():
@@ -362,14 +361,14 @@ def tracker_position_google_play():
             row.append(item[1]["conteins_company"])
             x1.add_row(row)
     else:
-        x1.field_names = ["Ключова фраза", "Позиція в пошуку", "Входжень в назви", "Входжень в ім'я розробника"]
+        x1.field_names = ["Key phrase", "Search position", "Occurrences in title", "Occurrences in developer name"]
         for item in map_keywords.items():
             x1.add_row([item[0], item[1]["position"] + 1, item[1]["conteins_title"], item[1]["conteins_company"]])
 
     if(args.csv != None):
         save_to_file_csv(x1, args.csv)
 
-    print("* * * Виконано! * * *")
+    print("* * * Done! * * *")
 
     tgp.close_browser()
     return
@@ -406,7 +405,7 @@ def average_install_in_Google_Play(bundleID, gl):
         '10B+' : [10000000001, 50000000000],
     }
 
-    print("Виконю аналіз...")
+    print("Executing analysis...")
 
     #, options=options
     browser = webdriver.Firefox(service = FirefoxService(GeckoDriverManager().install()), options=options)
@@ -417,7 +416,7 @@ def average_install_in_Google_Play(bundleID, gl):
 
     page_app: WebElement = browser.find_element(By.CLASS_NAME, "Fd93Bb")
 
-    print(Fore.GREEN + "Назва додатка: " + page_app.text + Fore.WHITE)
+    print(Fore.GREEN + "App name: " + page_app.text + Fore.WHITE)
 
     review_value = 0
     
@@ -435,9 +434,9 @@ def average_install_in_Google_Play(bundleID, gl):
         else:
             review_value = Decimal(review_str)
 
-        print("Загальна кількість відгуків: " + str(review_value))
+        print("Total number of reviews: " + str(review_value))
     except:
-        print("Загальна кількість відгуків: " + str(review_value))
+        print("Total number of reviews: " + str(review_value))
 
     installs: List[WebElement] = browser.find_elements(By.CLASS_NAME, "wVqUob")
 
@@ -448,7 +447,7 @@ def average_install_in_Google_Play(bundleID, gl):
 
     if(installs_str != None):
         interval = interval_installs.get(installs_str, [0, 0])
-        print("Загальна кількість завантажень: від " + str(interval[0]) + " до " + str(interval[1]))
+        print("Total number of downloads: from " + str(interval[0]) + " to " + str(interval[1]))
 
     button_deteils: List[WebElement] = browser.find_elements(By.CLASS_NAME, "VfPpkd-Bz112c-LgbsSe")
     
@@ -477,9 +476,9 @@ def average_install_in_Google_Play(bundleID, gl):
 
     x1 = int(interval[0] / days)
     x2 = int(interval[1] / days)
-    print("Середня кількість завантажень на добу: від " + str(x1) +" до " + str(x2))
+    print("Average number of downloads per day: from " + str(x1) +" to " + str(x2))
 
-    print("Середня кількість оцінок на добу: " + str(int(review_value / Decimal(days))))
+    print("Average number of ratings per day: " + str(int(review_value / Decimal(days))))
 
     browser.get("https://app.sensortower.com/overview/com.facebook.home?os=android&country=US&tab=about")
 
@@ -509,13 +508,13 @@ def average_install_in_Google_Play(bundleID, gl):
     revenue_str = strs[-1]
 
     if(revenue_str.__contains__("<")):
-        text = "Валютна виручка додатка за останній місяць менше: "
+        text = "App revenue for the last month is less than: "
         revenue_str = revenue_str.replace("<", "")
     elif(revenue_str.__contains__(">")):
-        text = "Валютна виручка додатка за останній місяць більше: "
+        text = "App revenue for the last month is more than: "
         revenue_str = revenue_str.replace(">", "")
     else:
-        text = "Валютна виручка додатка за останній місяць приблизно: "
+        text = "App revenue for the last month is approximately: "
 
     revenue_str = revenue_str.replace("$", "")
 
@@ -548,7 +547,7 @@ def average_install_in_Google_Play(bundleID, gl):
         browser.quit()
         return
 
-    print("Країни з яких додаток отримує найбільше трафіку: " + countries)
+    print("Top countries/regions for app traffic: " + countries)
 
     #MuiListItem-root
     release_deteils: List[WebElement] = browser.find_elements(By.CLASS_NAME, "MuiListItem-root")
@@ -560,9 +559,9 @@ def average_install_in_Google_Play(bundleID, gl):
             publisher_country = rd.text.replace("Publisher Country:\n", "")
         
     if(publisher_country != None):
-        print("Країна походження: " + publisher_country)
+        print("Publisher country: " + publisher_country)
 
-    print('* * * Виконано! * * *')
+    print('* * * Done! * * *')
 
     browser.quit()
 
@@ -594,12 +593,12 @@ def trends_google_play(gl, hl):
     elif hl == "it":
         alphabet = "abcdefghilmnopqrstuvzùúòóìíèéà"
     else:
-        print(hl + " - ця мова поки що не підтримується")
+        print(hl + " - this language is not supported yet")
         sys.exit(0)
 
     map_popularity = {}    
 
-    print(Fore.GREEN + "* * * Виконую аналіз трендів... * * *" + Fore.WHITE)
+    print(Fore.GREEN + "* * * Executing trend analysis... * * *" + Fore.WHITE)
 
     browser = webdriver.Firefox(service = FirefoxService(GeckoDriverManager().install()), options=options)
     browser.implicitly_wait(10)
@@ -620,16 +619,16 @@ def trends_google_play(gl, hl):
             minus += 1
 
     x = PrettyTable()
-    x.field_names = ["Ключова фраза", "Відносна популярність"]
+    x.field_names = ["Key phrase", "Relative popularity"]
 
     for item in map_popularity.items():
         x.add_row([item[0], item[1]])
 
-    print(x.get_string(sortby=("Відносна популярність"), reversesort=True)) 
-    print("Зібрано ключових слів: " + str(len(map_popularity)))
+    print(x.get_string(sortby=("Relative popularity"), reversesort=True)) 
+    print("Collected keywords: " + str(len(map_popularity)))
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
-    print("* * * Завершено! * * *")
+    print("* * * Finished! * * *")
 
     browser.quit()
             
@@ -645,7 +644,7 @@ def save_to_file_csv(x:PrettyTable, path:str):
         with open(path, 'w', newline='', encoding='utf-8') as f_output:
             f_output.write(x.get_csv_string())
         f_output.close()
-        print("Збережено в файл: {}".format(os.path.abspath(path)))
+        print("Saved to file: {}".format(os.path.abspath(path)))
     except Exception as e:
         print(e.args)
 
@@ -682,35 +681,35 @@ def main():
     if args.average != None:
         if args.gl != None:
             gl = args.gl
-            print("Код країни: " + gl)
+            print("Country code: " + gl)
         else:
             gl = "US"
-            print("Код країни: " + gl)
+            print("Country code: " + gl)
         average_install_in_Google_Play(args.average, gl)
         sys.exit()
 
     if args.hl != None:
         hl = args.hl
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
     else:
         hl = "en"
-        print("Код мови: " + hl)
+        print("Language code: " + hl)
 
     if args.gl != None:
         gl = args.gl
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
     else:
         gl = "US"
-        print("Код країни: " + gl)
+        print("Country code: " + gl)
 
     if args.trends:
         trends_google_play(gl, hl)
         sys.exit(0)
     elif args.key != None:
-        print(Fore.GREEN + "Виконую аналіз... " + args.key + Fore.WHITE)
+        print(Fore.GREEN + "Executing analysis... " + args.key + Fore.WHITE)
         keyword = args.key
     else:
-        print("Вкажіть ключ для аналізу (--key 'йога вдома')")
+        print("Specify a key for analysis (--key 'yoga at home')")
         sys.exit(0)
 
     #&hl=ru&gl=US
@@ -784,18 +783,18 @@ def main():
     list5 = google_suggests(list4, 15)
 
     x = PrettyTable()
-    x.field_names = ["Ключова фраза", "Відносна популярність"]
+    x.field_names = ["Key phrase", "Relative popularity"]
 
     for item in map_popularity.items():
         x.add_row([item[0], item[1]])
 
-    print(x.get_string(sortby=("Відносна популярність"), reversesort=True))    
+    print(x.get_string(sortby=("Relative popularity"), reversesort=True))    
 
-    print("Критерій популярності ключа (" + keyword + ") / Кількість похідних саджестів: " + str(len(map)))
+    print("Key popularity criterion (" + keyword + ") / Number of derived suggestions: " + str(len(map)))
 
     if(args.csv != None):
         save_to_file_csv(x, args.csv)
-    print("* * * Завершено! * * *")
+    print("* * * Finished! * * *")
 
     browser.quit()
 
